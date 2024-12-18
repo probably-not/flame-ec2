@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        otp: ["27.0.1"]
+        otp: ["26.2"]
         elixir: ["1.17.2", "1.16.3", "1.15.8"]
     steps:
       - name: Git clone the repository

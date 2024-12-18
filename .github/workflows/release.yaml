@@ -1,0 +1,30 @@
+name: "Release To Hex"
+
+on:
+  push:
+    branches-ignore:
+      - "**"
+    tags:
+      - v*
+
+concurrency:
+  group: release-${{ github.event.repository.name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v4
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Release to Hex.PM
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: mix hex.publish --yes

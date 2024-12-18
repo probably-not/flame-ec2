@@ -1,0 +1,18 @@
+version: 2
+
+updates:
+  - package-ecosystem: "mix"
+    insecure-external-code-execution: "allow"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    reviewers:
+      - "@probably-not"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "@probably-not"

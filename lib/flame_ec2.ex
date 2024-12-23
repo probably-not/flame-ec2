@@ -49,6 +49,8 @@ defmodule FlameEC2 do
 
   ### Optional Configurations
 
+  * `:boot_timeout` - A timeout for booting a new node. Defaults to 120_000.
+
   * `:instance_type` - The instance type that should be used. Defaults to "t3.nano", which falls under the AWS free tier,
   however, you likely want to change this to something that's more appropriate for your pool's workload.
 
@@ -82,4 +84,13 @@ defmodule FlameEC2 do
   ```
   """
   @behaviour FLAME.Backend
+
+  alias FlameEC2.Config
+
+  @impl true
+  def init(opts) do
+    conf = Application.get_env(:flame, __MODULE__) || []
+    runner_config = Config.new(opts, conf)
+    {:ok, runner_config}
+  end
 end

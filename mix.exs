@@ -50,6 +50,7 @@ defmodule FlameEC2.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:flame, "~> 0.5.0"},
       ## Testing and Development Dependencies
       {:ex_doc, "~> 0.34.2", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

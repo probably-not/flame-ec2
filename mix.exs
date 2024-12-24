@@ -51,6 +51,8 @@ defmodule FlameEC2.MixProject do
   defp deps do
     [
       {:flame, "~> 0.5.0"},
+      {:aws_credentials, "~> 0.3.2"},
+      {:req, "~> 0.5.0"},
       ## Testing and Development Dependencies
       {:ex_doc, "~> 0.34.2", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

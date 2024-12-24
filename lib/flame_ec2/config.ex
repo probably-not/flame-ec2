@@ -1,6 +1,9 @@
 defmodule FlameEC2.Config do
   @moduledoc false
 
+  require Logger
+  alias __MODULE__
+
   @valid_opts [
     :auto_configure,
     :log,
@@ -13,11 +16,9 @@ defmodule FlameEC2.Config do
     :iam_instance_profile,
     :key_name,
     :env,
-    :boot_timeout
+    :boot_timeout,
+    :app
   ]
-
-  require Logger
-  alias __MODULE__
 
   defstruct auto_configure: false,
             log: nil,
@@ -30,7 +31,8 @@ defmodule FlameEC2.Config do
             iam_instance_profile: nil,
             key_name: nil,
             env: %{},
-            boot_timeout: nil
+            boot_timeout: nil,
+            app: nil
 
   def new(opts, config) do
     default = %Config{
@@ -38,7 +40,8 @@ defmodule FlameEC2.Config do
       log: Keyword.get(config, :log, false),
       launch_template_version: "$Default",
       instance_type: "t3.nano",
-      boot_timeout: 120_000
+      boot_timeout: 120_000,
+      app: System.get_env("RELEASE_NAME")
     }
 
     provided_opts =

@@ -37,6 +37,9 @@ defmodule FlameEC2 do
 
   ### Required Configurations
 
+  * `:app` - The name of your application. Defaults to `System.get_env("RELEASE_NAME")`.
+  If this environment variable is not set for some reason, this value must be set in the configuration.
+
   * `:image_id` - The ID of the AMI to use. This is a required attribute if you are not using a launch template, and has no default.
 
   * `:launch_template_id` - The ID of the Launch Template to use. This is a required attribute if you are not using an image id, and has no default.
@@ -85,12 +88,11 @@ defmodule FlameEC2 do
   """
   @behaviour FLAME.Backend
 
-  alias FlameEC2.Config
+  alias FlameEC2.BackendState
 
   @impl true
   def init(opts) do
-    conf = Application.get_env(:flame, __MODULE__) || []
-    runner_config = Config.new(opts, conf)
-    {:ok, runner_config}
+    app_config = Application.get_env(:flame, __MODULE__) || []
+    {:ok, BackendState.new(opts, app_config)}
   end
 end

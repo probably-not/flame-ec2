@@ -62,6 +62,14 @@ defmodule FlameEC2 do
   * `:key_name` - The name of the key pair to use for you to be able to connect to the instance.
   This is not required, however, an instance that was created without a key pair will be inaccessible without another way to log in.
 
+  * `:instance_metadata_url` - The EC2 instance metadata URL. This is used when auto-configuring the pool with the `auto_configure` configuration set to `true`.
+  Defaults to "http://169.254.169.254/latest/meta-data/" (note the trailing slash), which is the internal EC2 metadata URL.
+  This can be adjusted for local testing, but likely does not need to be adjusted outside of this use case.
+
+  * `:instance_metadata_token_url` - The EC2 instance metadata token URL. This is used when auto-configuring the pool with the `auto_configure` configuration set to `true`.
+  Defaults to "http://169.254.169.254/latest/api/token", which is the internal EC2 metadata token URL.
+  This can be adjusted for local testing, but likely does not need to be adjusted outside of this use case.
+
   ## Environment Variables
 
   The FLAME EC2 machines *do not* inherit the environment variables of the parent.

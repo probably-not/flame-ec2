@@ -17,7 +17,9 @@ defmodule FlameEC2.Config do
     :key_name,
     :env,
     :boot_timeout,
-    :app
+    :app,
+    :instance_metadata_url,
+    :instance_metadata_token_url
   ]
 
   defstruct auto_configure: false,
@@ -32,7 +34,9 @@ defmodule FlameEC2.Config do
             key_name: nil,
             env: %{},
             boot_timeout: nil,
-            app: nil
+            app: nil,
+            instance_metadata_url: nil,
+            instance_metadata_token_url: nil
 
   def new(opts, config) do
     default = %Config{
@@ -41,7 +45,9 @@ defmodule FlameEC2.Config do
       launch_template_version: "$Default",
       instance_type: "t3.nano",
       boot_timeout: 120_000,
-      app: System.get_env("RELEASE_NAME")
+      app: System.get_env("RELEASE_NAME"),
+      instance_metadata_url: "http://169.254.169.254/latest/meta-data/",
+      instance_metadata_token_url: "http://169.254.169.254/latest/api/token"
     }
 
     provided_opts =

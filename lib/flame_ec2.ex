@@ -70,6 +70,9 @@ defmodule FlameEC2 do
   Defaults to "http://169.254.169.254/latest/api/token", which is the internal EC2 metadata token URL.
   This can be adjusted for local testing, but likely does not need to be adjusted outside of this use case.
 
+  * `:ec2_service_endpoint` - The URL of the EC2. Defaults to "https://ec2.amazonaws.com/", which is the AWS EC2 endpoint.
+  This can be adjusted for local testing, but likely does not need to be adjusted outside of this use case.
+
   ## Environment Variables
 
   The FLAME EC2 machines *do not* inherit the environment variables of the parent.

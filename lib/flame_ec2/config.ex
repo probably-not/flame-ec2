@@ -21,7 +21,8 @@ defmodule FlameEC2.Config do
     :boot_timeout,
     :app,
     :instance_metadata_url,
-    :instance_metadata_token_url
+    :instance_metadata_token_url,
+    :ec2_service_endpoint
   ]
 
   defstruct auto_configure: false,
@@ -37,9 +38,10 @@ defmodule FlameEC2.Config do
             env: %{},
             boot_timeout: nil,
             app: nil,
+            local_ip: nil,
             instance_metadata_url: nil,
             instance_metadata_token_url: nil,
-            local_ip: nil
+            ec2_service_endpoint: nil
 
   def new(opts, config) do
     default = %Config{
@@ -50,7 +52,8 @@ defmodule FlameEC2.Config do
       boot_timeout: 120_000,
       app: System.get_env("RELEASE_NAME"),
       instance_metadata_url: "http://169.254.169.254/latest/meta-data/",
-      instance_metadata_token_url: "http://169.254.169.254/latest/api/token"
+      instance_metadata_token_url: "http://169.254.169.254/latest/api/token",
+      ec2_service_endpoint: "https://ec2.amazonaws.com/"
     }
 
     provided_opts =

@@ -4,7 +4,15 @@ defmodule FlameEC2.BackendState do
   alias __MODULE__
   alias FlameEC2.Config
 
-  defstruct config: nil, runner_node_base: nil, parent_ref: nil, runner_env: nil
+  defstruct config: nil,
+            runner_node_base: nil,
+            runner_node_name: nil,
+            parent_ref: nil,
+            runner_env: nil,
+            runner_id: nil,
+            runner_instance_id: nil,
+            runner_instance_ip: nil,
+            remote_terminator_pid: nil
 
   def new(opts, app_config) do
     config = Config.new(opts, app_config)

@@ -104,6 +104,7 @@ defmodule FlameEC2 do
   import FlameEC2.Utils
 
   alias FlameEC2.BackendState
+  alias FlameEC2.EC2Api
 
   @impl true
   def init(opts) do
@@ -132,10 +133,11 @@ defmodule FlameEC2 do
 
   @impl true
   def system_shutdown do
-    # TODO: When creating the instance, we should set InstanceInitiatedShutdownBehavior to `terminate`.
-    # This can be used to ensure that on instance shutdown, we terminate the instance completely.
+    # When creating the instance, we set InstanceInitiatedShutdownBehavior to `terminate`.
+    # This is used to ensure that on instance shutdown, we terminate the instance completely.
     # Using this policy, we can set up our child node to run our app using systemd,
-    # and add a post stop hook to completely shut down our node. This will let us simplify not leaving orphaned nodes alive.
+    # and add a post stop hook to completely shut down our node.
+    # This will let us simplify not leaving orphaned nodes alive.
     System.stop()
   end
 
@@ -143,8 +145,7 @@ defmodule FlameEC2 do
   def remote_boot(%BackendState{parent_ref: parent_ref} = state) do
     {resp, req_connect_time} =
       with_elapsed_ms(fn ->
-        # TODO: Make the RunInstances request
-        %{}
+        EC2Api.run_instances!(state)
       end)
 
     if state.config.log do

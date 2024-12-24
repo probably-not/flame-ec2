@@ -59,6 +59,7 @@ defmodule FlameEC2.Config do
 
     config
     |> maybe_auto_configure!()
+    |> validate_app_name!()
     |> validate_instance_creation_details!()
     |> validate_instance_subnet!()
     |> validate_instance_security_group!()
@@ -69,7 +70,14 @@ defmodule FlameEC2.Config do
   end
 
   defp maybe_auto_configure!(%Config{} = config) do
-    # TODO: Implement auto configuration based on the instance metadata endpoint to fetch all necessary details.
+  end
+
+  defp validate_app_name!(%Config{app: nil}) do
+    raise ArgumentError,
+          "You must specify the app for the FlameEC2 backend"
+  end
+
+  defp validate_app_name!(%Config{} = config) do
     config
   end
 

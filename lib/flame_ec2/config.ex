@@ -38,7 +38,8 @@ defmodule FlameEC2.Config do
             boot_timeout: nil,
             app: nil,
             instance_metadata_url: nil,
-            instance_metadata_token_url: nil
+            instance_metadata_token_url: nil,
+            local_ip: nil
 
   def new(opts, config) do
     default = %Config{
@@ -62,13 +63,22 @@ defmodule FlameEC2.Config do
     config
     |> maybe_auto_configure!()
     |> validate_app_name!()
+    |> validate_local_ip!()
     |> validate_instance_creation_details!()
     |> validate_instance_subnet!()
     |> validate_instance_security_group!()
   end
 
   defp maybe_auto_configure!(%Config{auto_configure: false} = config) do
-    config
+    {:ok, %{} = metadata} =
+      InstanceMetadata.get(config.instance_metadata_url, config.instance_metadata_token_url, [
+        "local-ipv4"
+      ])
+
+    %Config{
+      config
+      | local_ip: metadata["local-ipv4"]
+    }
   end
 
   defp maybe_auto_configure!(%Config{} = config) do
@@ -90,16 +100,24 @@ defmodule FlameEC2.Config do
         subnet_id: network_interface["subnet-id"],
         security_group_id: network_interface["security-group-ids"],
         instance_type: metadata["instance-type"],
-        iam_instance_profile: iam_instance_profile
+        iam_instance_profile: iam_instance_profile,
+        local_ip: metadata["local-ipv4"]
     }
   end
 
   defp validate_app_name!(%Config{app: nil}) do
-    raise ArgumentError,
-          "You must specify the app for the FlameEC2 backend"
+    raise ArgumentError, "You must specify the app for the FlameEC2 backend"
   end
 
   defp validate_app_name!(%Config{} = config) do
+    config
+  end
+
+  defp validate_local_ip!(%Config{local_ip: nil}) do
+    raise ArgumentError, "Could not extract the local IPv4 for the instance via instance metadata"
+  end
+
+  defp validate_local_ip!(%Config{} = config) do
     config
   end
 
@@ -131,8 +149,7 @@ defmodule FlameEC2.Config do
   end
 
   defp validate_instance_subnet!(%Config{subnet_id: nil}) do
-    raise ArgumentError,
-          "You must specify a subnet ID for the FlameEC2 backend"
+    raise ArgumentError, "You must specify a subnet ID for the FlameEC2 backend"
   end
 
   defp validate_instance_subnet!(%Config{} = config) do
@@ -140,8 +157,7 @@ defmodule FlameEC2.Config do
   end
 
   defp validate_instance_security_group!(%Config{security_group_id: nil}) do
-    raise ArgumentError,
-          "You must specify a security group ID for the FlameEC2 backend"
+    raise ArgumentError, "You must specify a security group ID for the FlameEC2 backend"
   end
 
   defp validate_instance_security_group!(%Config{} = config) do

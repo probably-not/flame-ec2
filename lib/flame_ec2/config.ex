@@ -2,7 +2,9 @@ defmodule FlameEC2.Config do
   @moduledoc false
 
   require Logger
+
   alias __MODULE__
+  alias FlameEC2.InstanceMetadata
 
   @valid_opts [
     :auto_configure,
@@ -70,6 +72,26 @@ defmodule FlameEC2.Config do
   end
 
   defp maybe_auto_configure!(%Config{} = config) do
+    {:ok, %{} = metadata} =
+      InstanceMetadata.get(config.instance_metadata_url, config.instance_metadata_token_url)
+
+    {_mac_address, network_interface} = Enum.at(metadata["network"]["interfaces"]["macs"], 0, %{})
+
+    iam_instance_profile =
+      if info_json = metadata["iam"]["info"] do
+        FLAME.Parser.JSON.decode!(info_json)["InstanceProfileArn"]
+      else
+        nil
+      end
+
+    %Config{
+      config
+      | image_id: metadata["ami-id"],
+        subnet_id: network_interface["subnet-id"],
+        security_group_id: network_interface["security-group-ids"],
+        instance_type: metadata["instance-type"],
+        iam_instance_profile: iam_instance_profile
+    }
   end
 
   defp validate_app_name!(%Config{app: nil}) do

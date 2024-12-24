@@ -88,11 +88,108 @@ defmodule FlameEC2 do
   """
   @behaviour FLAME.Backend
 
+  require Logger
+
+  import FlameEC2.Utils
+
   alias FlameEC2.BackendState
 
   @impl true
   def init(opts) do
     app_config = Application.get_env(:flame, __MODULE__) || []
     {:ok, BackendState.new(opts, app_config)}
+  end
+
+  @impl true
+  # The following TODO is from `FLAME.FlyBackend`. We should track it to ensure that we mirror the behavior properly.
+  # TODO explore spawn_request
+  def remote_spawn_monitor(%BackendState{} = state, term) do
+    case term do
+      func when is_function(func, 0) ->
+        {pid, ref} = Node.spawn_monitor(state.runner_node_name, func)
+        {:ok, {pid, ref}}
+
+      {mod, fun, args} when is_atom(mod) and is_atom(fun) and is_list(args) ->
+        {pid, ref} = Node.spawn_monitor(state.runner_node_name, mod, fun, args)
+        {:ok, {pid, ref}}
+
+      other ->
+        raise ArgumentError,
+              "expected a null arity function or {mod, func, args}. Got: #{inspect(other)}"
+    end
+  end
+
+  @impl true
+  def system_shutdown do
+    # TODO: When creating the instance, we should set InstanceInitiatedShutdownBehavior to `terminate`.
+    # This can be used to ensure that on instance shutdown, we terminate the instance completely.
+    # Using this policy, we can set up our child node to run our app using systemd,
+    # and add a post stop hook to completely shut down our node. This will let us simplify not leaving orphaned nodes alive.
+    System.stop()
+  end
+
+  @impl true
+  def remote_boot(%BackendState{parent_ref: parent_ref} = state) do
+    {resp, req_connect_time} =
+      with_elapsed_ms(fn ->
+        # TODO: Make the RunInstances request
+        %{}
+      end)
+
+    if state.config.log do
+      Logger.log(
+        state.config.log,
+        "#{inspect(__MODULE__)} #{inspect(node())} EC2 instance created in #{req_connect_time}ms"
+      )
+    end
+
+    remaining_connect_window = state.config.boot_timeout - req_connect_time
+
+    case resp do
+      %{"id" => id, "instance_id" => instance_id, "instance_ip" => ip} ->
+        new_state =
+          %BackendState{
+            state
+            | runner_id: id,
+              runner_instance_id: instance_id,
+              runner_instance_ip: ip
+          }
+
+        remote_terminator_pid =
+          receive do
+            {^parent_ref, {:remote_up, remote_terminator_pid}} ->
+              remote_terminator_pid
+          after
+            remaining_connect_window ->
+              Logger.error(
+                "failed to connect to EC2 instance within #{state.config.boot_timeout}ms"
+              )
+
+              exit(:timeout)
+          end
+
+        new_state = %BackendState{
+          new_state
+          | remote_terminator_pid: remote_terminator_pid,
+            runner_node_name: node(remote_terminator_pid)
+        }
+
+        {:ok, remote_terminator_pid, new_state}
+
+      other ->
+        {:error, other}
+    end
+  end
+
+  @impl true
+  def handle_info(msg, %BackendState{} = state) do
+    if state.config.log do
+      Logger.log(
+        state.config.log,
+        "Missed message sent to FlameEC2 Process #{self()}: #{inspect(msg)}"
+      )
+    end
+
+    {:noreply, state}
   end
 end

@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  ec2-instance-metadata:
+    # This is set to my current configuration - which is a Apple Silicon Mac.
+    # For some reason it was not automatically pulled with the correct platform.
+    # I should probably figure out how to handle this properly to ensure that others on
+    # various platforms can use it...
+    platform: linux/arm64/v8
+    image: public.ecr.aws/aws-ec2/amazon-ec2-metadata-mock:v1.12.0
+    restart: always
+    ports:
+      - "1338:1338"
+

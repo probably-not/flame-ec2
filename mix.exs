@@ -54,7 +54,7 @@ defmodule FlameEC2.MixProject do
       {:aws_credentials, "~> 0.3.2"},
       {:req, "~> 0.5.0"},
       ## Testing and Development Dependencies
-      {:ex_doc, "~> 0.34.2", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.36.0", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.18", only: :test},
       {:remixed_remix, "~> 2.0.2", only: :dev},

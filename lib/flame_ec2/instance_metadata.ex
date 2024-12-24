@@ -4,6 +4,13 @@ defmodule FlameEC2.InstanceMetadata do
   require Logger
 
   def get(metadata_url, metadata_token_url, root_keys \\ nil) do
+    metadata_url =
+      if String.ends_with?(metadata_url, "/") do
+        metadata_url
+      else
+        metadata_url <> "/"
+      end
+
     case imds_v2(metadata_url, metadata_token_url, root_keys) do
       {:ok, metadata} ->
         {:ok, metadata}

@@ -44,8 +44,24 @@ defmodule FlameEC2.EC2Api do
     end
   end
 
-  defp instance_tags(%BackendState{}) do
-    %{}
+  defp instance_tags(%BackendState{} = state) do
+    %{
+      "TagSpecification" => [
+        %{
+          "ResourceType" => "instance",
+          "Tag" => [
+            %{
+              "Key" => "FLAME_PARENT_IP",
+              "Value" => state.config.local_ip
+            },
+            %{
+              "Key" => "FLAME_PARENT_APP",
+              "Value" => state.config.app
+            }
+          ]
+        }
+      ]
+    }
   end
 
   defp params_from_config(%Config{} = config) do

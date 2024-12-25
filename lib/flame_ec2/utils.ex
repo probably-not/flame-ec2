@@ -16,25 +16,10 @@ defmodule FlameEC2.Utils do
     Enum.flat_map(map, fn {key, value} ->
       case value do
         value when is_map(value) ->
-          value
-          |> do_flatten_json_object()
-          |> Enum.map(fn {k, v} -> {"#{key}.#{k}", v} end)
+          do_flatten_map(key, value)
 
         value when is_list(value) ->
-          value
-          |> Enum.with_index(1)
-          |> Enum.map(fn {v, idx} ->
-            case v do
-              v when is_map(v) or is_list(v) ->
-                v
-                |> do_flatten_json_object()
-                |> Enum.map(fn {k, val} -> {"#{key}.#{idx}.#{k}", val} end)
-
-              v ->
-                {"#{key}.#{idx}", v}
-            end
-          end)
-          |> List.flatten()
+          do_flatten_list(key, value)
 
         value ->
           [{to_string(key), value}]
@@ -50,4 +35,27 @@ defmodule FlameEC2.Utils do
   end
 
   defp do_flatten_json_object(value), do: [{to_string(1), value}]
+
+  defp do_flatten_map(key, value) do
+    value
+    |> do_flatten_json_object()
+    |> Enum.map(fn {k, v} -> {"#{key}.#{k}", v} end)
+  end
+
+  defp do_flatten_list(key, value) do
+    value
+    |> Enum.with_index(1)
+    |> Enum.map(fn {v, idx} ->
+      case v do
+        v when is_map(v) or is_list(v) ->
+          v
+          |> do_flatten_json_object()
+          |> Enum.map(fn {k, val} -> {"#{key}.#{idx}.#{k}", val} end)
+
+        v ->
+          {"#{key}.#{idx}", v}
+      end
+    end)
+    |> List.flatten()
+  end
 end

@@ -2,6 +2,7 @@ defmodule FlameEC2.Config do
   @moduledoc false
 
   alias __MODULE__
+  alias FLAME.Parser.JSON
   alias FlameEC2.InstanceMetadata
 
   require Logger
@@ -92,7 +93,7 @@ defmodule FlameEC2.Config do
 
     iam_instance_profile =
       if info_json = metadata["iam"]["info"] do
-        FLAME.Parser.JSON.decode!(info_json)["InstanceProfileArn"]
+        JSON.decode!(info_json)["InstanceProfileArn"]
       end
 
     %Config{
@@ -137,9 +138,7 @@ defmodule FlameEC2.Config do
 
   defp validate_instance_creation_details!(%Config{} = config) do
     Logger.warning(
-      "Found both image_id and launch_template_id set for the FlameEC2 configuration. launch_template_id will be preferred over the image_id",
-      launch_template_id: config.launch_template_id,
-      image_id: config.image_id
+      "Found both image_id #{config.image_id} and launch_template_id #{config.launch_template_id} set for the FlameEC2 configuration. launch_template_id will be preferred over the image_id"
     )
 
     Map.put(config, :image_id, nil)

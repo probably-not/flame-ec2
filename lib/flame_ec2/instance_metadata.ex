@@ -45,31 +45,7 @@ defmodule FlameEC2.InstanceMetadata do
     case Req.get(url, headers: headers) do
       {:ok, %{status: 200, body: body}} when is_binary(body) ->
         if String.ends_with?(url, "/") do
-          items =
-            body
-            |> String.split("\n")
-            |> Enum.filter(&(byte_size(&1) > 0))
-            |> filter_root_keys(root_keys)
-
-          result =
-            Enum.reduce(items, %{}, fn item, acc ->
-              key = String.trim_trailing(item, "/")
-
-              if String.ends_with?(item, "/") do
-                new_url = url <> item
-
-                case fetch_metadata(new_url, headers, nil) do
-                  {:ok, value} -> Map.put(acc, key, value)
-                  _ -> acc
-                end
-              else
-                case Req.get(url <> item, headers: headers) do
-                  {:ok, %{body: value}} when is_binary(value) -> Map.put(acc, key, value)
-                  _ -> acc
-                end
-              end
-            end)
-
+          result = do_recurse_metadata(url, headers, root_keys, body)
           {:ok, result}
         else
           {:ok, body}
@@ -78,6 +54,32 @@ defmodule FlameEC2.InstanceMetadata do
       _ ->
         {:error, "Failed to fetch metadata"}
     end
+  end
+
+  defp do_recurse_metadata(url, headers, root_keys, body) do
+    items =
+      body
+      |> String.split("\n")
+      |> Enum.filter(&(byte_size(&1) > 0))
+      |> filter_root_keys(root_keys)
+
+    Enum.reduce(items, %{}, fn item, acc ->
+      key = String.trim_trailing(item, "/")
+
+      if String.ends_with?(item, "/") do
+        new_url = url <> item
+
+        case fetch_metadata(new_url, headers, nil) do
+          {:ok, value} -> Map.put(acc, key, value)
+          _ -> acc
+        end
+      else
+        case Req.get(url <> item, headers: headers) do
+          {:ok, %{body: value}} when is_binary(value) -> Map.put(acc, key, value)
+          _ -> acc
+        end
+      end
+    end)
   end
 
   defp filter_root_keys(items, nil) do

@@ -114,6 +114,7 @@ defmodule FlameEC2 do
 
   @impl true
   # The following TODO is from `FLAME.FlyBackend`. We should track it to ensure that we mirror the behavior properly.
+  # credo:disable-for-next-line
   # TODO explore spawn_request
   def remote_spawn_monitor(%BackendState{} = state, term) do
     case term do

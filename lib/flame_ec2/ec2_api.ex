@@ -1,6 +1,8 @@
 defmodule FlameEC2.EC2Api do
   @moduledoc false
 
+  require Logger
+
   import FlameEC2.Utils
 
   alias FlameEC2.BackendState
@@ -26,14 +28,10 @@ defmodule FlameEC2.EC2Api do
           url: uri,
           method: :get,
           headers: [{:accept, "application/json"}],
-          aws_sigv4: [
-            service: "ec2",
-            access_key_id: credentials.access_key_id,
-            secret_access_key: credentials.secret_access_key,
-            token: credentials[:token],
-            region: credentials[:region]
-          ]
+          aws_sigv4: Map.put_new(credentials, :service, "ec2")
         )
+        |> Req.request()
+        |> raise_or_response!()
     end
   end
 
@@ -108,5 +106,19 @@ defmodule FlameEC2.EC2Api do
     %{
       "ImageId" => image_id
     }
+  end
+
+  defp raise_or_response!({:ok, %Req.Response{status: status, body: body}}) when status >= 300 do
+    Logger.error("Failed to create instance with status #{status} and errors: #{inspect(body)}")
+    raise "Bad status #{status} with errors: #{inspect(body)}"
+  end
+
+  defp raise_or_response!({:ok, %Req.Response{} = resp}) do
+    resp.body
+  end
+
+  defp raise_or_response!({:error, exception}) do
+    Logger.error("Failed to create instance with exception: #{inspect(exception)}")
+    raise exception
   end
 end

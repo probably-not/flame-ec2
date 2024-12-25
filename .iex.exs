@@ -5,6 +5,7 @@ System.put_env("AWS_ACCESS_KEY_ID", "xxxxxxxxxxxx")
 System.put_env("AWS_SECRET_ACCESS_KEY", "xxxxxxxxxxxx")
 
 defmodule QuickConfigs do
+  @moduledoc false
   def local_auto_configure do
     FlameEC2.BackendState.new([],
       auto_configure: true,

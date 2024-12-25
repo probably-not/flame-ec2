@@ -99,12 +99,12 @@ defmodule FlameEC2 do
   """
   @behaviour FLAME.Backend
 
-  require Logger
-
   import FlameEC2.Utils
 
   alias FlameEC2.BackendState
   alias FlameEC2.EC2Api
+
+  require Logger
 
   @impl true
   def init(opts) do
@@ -174,9 +174,7 @@ defmodule FlameEC2 do
               remote_terminator_pid
           after
             remaining_connect_window ->
-              Logger.error(
-                "failed to connect to EC2 instance within #{state.config.boot_timeout}ms"
-              )
+              Logger.error("failed to connect to EC2 instance within #{state.config.boot_timeout}ms")
 
               exit(:timeout)
           end

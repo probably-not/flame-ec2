@@ -25,10 +25,8 @@ defmodule FlameEC2.InstanceMetadata do
   end
 
   defp imds_v2(metadata_url, metadata_token_url, root_keys) do
-    with {:ok, token} <- fetch_token(metadata_token_url),
-         {:ok, metadata} <-
-           fetch_metadata(metadata_url, [{"X-aws-ec2-metadata-token", token}], root_keys) do
-      {:ok, metadata}
+    with {:ok, token} <- fetch_token(metadata_token_url) do
+      fetch_metadata(metadata_url, [{"X-aws-ec2-metadata-token", token}], root_keys)
     end
   end
 

@@ -1,12 +1,12 @@
 defmodule FlameEC2.EC2Api do
   @moduledoc false
 
-  require Logger
-
   import FlameEC2.Utils
 
   alias FlameEC2.BackendState
   alias FlameEC2.Config
+
+  require Logger
 
   def run_instances!(%BackendState{} = state) do
     params = build_query_from_state(state)
@@ -24,12 +24,13 @@ defmodule FlameEC2.EC2Api do
         raise "No AWS credentials found in env or in credentials cache"
 
       %{} ->
-        Req.new(
+        [
           url: uri,
           method: :get,
           headers: [{:accept, "application/json"}],
           aws_sigv4: Map.put_new(credentials, :service, "ec2")
-        )
+        ]
+        |> Req.new()
         |> Req.request()
         |> raise_or_response!()
     end
@@ -101,8 +102,7 @@ defmodule FlameEC2.EC2Api do
     }
   end
 
-  defp creation_details_params(%Config{image_id: image_id})
-       when is_binary(image_id) and image_id != "" do
+  defp creation_details_params(%Config{image_id: image_id}) when is_binary(image_id) and image_id != "" do
     %{
       "ImageId" => image_id
     }

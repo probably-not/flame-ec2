@@ -1,10 +1,10 @@
 defmodule FlameEC2.Config do
   @moduledoc false
 
-  require Logger
-
   alias __MODULE__
   alias FlameEC2.InstanceMetadata
+
+  require Logger
 
   @valid_opts [
     :auto_configure,
@@ -93,8 +93,6 @@ defmodule FlameEC2.Config do
     iam_instance_profile =
       if info_json = metadata["iam"]["info"] do
         FLAME.Parser.JSON.decode!(info_json)["InstanceProfileArn"]
-      else
-        nil
       end
 
     %Config{
@@ -129,15 +127,11 @@ defmodule FlameEC2.Config do
           "You must specify either the image_id or the launch_template_id for the FlameEC2 backend"
   end
 
-  defp validate_instance_creation_details!(
-         %Config{image_id: _image_id, launch_template_id: nil} = config
-       ) do
+  defp validate_instance_creation_details!(%Config{image_id: _image_id, launch_template_id: nil} = config) do
     config
   end
 
-  defp validate_instance_creation_details!(
-         %Config{image_id: nil, launch_template_id: _launch_template_id} = config
-       ) do
+  defp validate_instance_creation_details!(%Config{image_id: nil, launch_template_id: _launch_template_id} = config) do
     config
   end
 

@@ -1,5 +1,6 @@
 defmodule FlameEC2.UtilsTest do
   use ExUnit.Case
+
   doctest FlameEC2.Utils
 
   test "code loaded" do

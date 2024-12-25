@@ -7,14 +7,7 @@ defmodule FlameEC2.EC2Api do
   alias FlameEC2.Config
 
   def run_instances!(%BackendState{} = state) do
-    params =
-      state.config
-      |> params_from_config()
-      |> Map.merge(instance_tags(state))
-      |> Map.put("Action", "RunInstances")
-      |> flatten_json_object()
-      |> Map.filter(fn {_k, v} -> not is_nil(v) end)
-      |> URI.encode_query()
+    params = build_query_from_state(state)
 
     uri =
       state.config.ec2_service_endpoint
@@ -44,6 +37,16 @@ defmodule FlameEC2.EC2Api do
     end
   end
 
+  def build_query_from_state(%BackendState{} = state) do
+    state.config
+    |> params_from_config()
+    |> Map.merge(instance_tags(state))
+    |> Map.put("Action", "RunInstances")
+    |> flatten_json_object()
+    |> Map.filter(fn {_k, v} -> not is_nil(v) end)
+    |> URI.encode_query()
+  end
+
   defp instance_tags(%BackendState{} = state) do
     %{
       "TagSpecification" => [
@@ -69,8 +72,17 @@ defmodule FlameEC2.EC2Api do
       "MaxCount" => 1,
       "MinCount" => 1,
       "KeyName" => config.key_name,
-      "SecurityGroupId" => [config.security_group_id],
-      "SubnetId" => config.subnet_id,
+      "NetworkInterface" => [
+        %{
+          "AssociatePublicIpAddress" => false,
+          "DeleteOnTermination" => true,
+          "DeviceIndex" => 0,
+          "SubnetId" => config.subnet_id,
+          "SecurityGroupId" => [
+            config.security_group_id
+          ]
+        }
+      ],
       "InstanceType" => config.instance_type,
       "IamInstanceProfile" => %{
         "Arn" => config.iam_instance_profile

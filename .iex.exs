@@ -3,3 +3,5 @@
 # and I can't find a configuration to turn those logs off in development.
 System.put_env("AWS_ACCESS_KEY_ID", "xxxxxxxxxxxx")
 System.put_env("AWS_SECRET_ACCESS_KEY", "xxxxxxxxxxxx")
+
+FlameEC2.QuickConfigs.sync_localstack_with_ec2_mock()

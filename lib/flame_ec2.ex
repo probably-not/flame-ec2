@@ -2,6 +2,18 @@ defmodule FlameEC2 do
   @moduledoc """
   A `FLAME.Backend` using [AWS EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html) machines.
 
+  ## How Does It Work?
+
+  `FlameEC2` loads a release bundle that is stored in S3, and runs this release on a child node that it raises.
+  The release will always be run with the built in release start command, with the environment marking it as a FLAME child.
+
+  To facilitate shutdown of the node, `FlameEC2` runs the release under a systemd service, which is installed with a Post Stop hook
+  that will automatically run a shutdown command on the instance when the release is stopped. This, in combination with setting the
+  `"InstanceInitiatedShutdownBehavior"` to `"terminate"`, guarantees that when the release is stopped, the instance will trigger its
+  shutdown and termination behavior.
+
+  ## Usage
+
   To use, you must tell FLAME to use the `FlameEC2` backend by default.
   This can be set via application configuration in your `config/runtime.exs` withing a `:prod` block:
 
@@ -36,6 +48,11 @@ defmodule FlameEC2 do
   If you'd like to manually configure the details in your pool, you can read about the available configurations below.
 
   ### Required Configurations
+
+  * `:s3_bundle_url` - The S3 URL of your release bundle.
+  This value must be set in order to ensure that we can start the application properly on the child node.
+  The bundle is expected to either be a directory that will be synced locally onto the child node,
+  or a `.tar.gz` file that will be copied to the node and decompressed.
 
   * `:app` - The name of your application. Defaults to `System.get_env("RELEASE_NAME")`.
   If this environment variable is not set for some reason, this value must be set in the configuration.

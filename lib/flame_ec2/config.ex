@@ -21,6 +21,7 @@ defmodule FlameEC2.Config do
     :env,
     :boot_timeout,
     :app,
+    :s3_bundle_url,
     :instance_metadata_url,
     :instance_metadata_token_url,
     :ec2_service_endpoint
@@ -39,6 +40,8 @@ defmodule FlameEC2.Config do
             env: %{},
             boot_timeout: nil,
             app: nil,
+            s3_bundle_url: nil,
+            s3_bundle_compressed: false,
             local_ip: nil,
             instance_metadata_url: nil,
             instance_metadata_token_url: nil,
@@ -67,6 +70,7 @@ defmodule FlameEC2.Config do
     config
     |> maybe_auto_configure!()
     |> validate_app_name!()
+    |> validate_s3_bundle_url!()
     |> validate_local_ip!()
     |> validate_instance_creation_details!()
     |> validate_instance_subnet!()
@@ -113,6 +117,14 @@ defmodule FlameEC2.Config do
 
   defp validate_app_name!(%Config{} = config) do
     config
+  end
+
+  defp validate_s3_bundle_url!(%Config{s3_bundle_url: nil}) do
+    raise ArgumentError, "You must specify the S3 Bundle URL for the FlameEC2 backend"
+  end
+
+  defp validate_s3_bundle_url!(%Config{} = config) do
+    %Config{config | s3_bundle_compressed: String.ends_with?(config.s3_bundle_url, ".tar.gz")}
   end
 
   defp validate_local_ip!(%Config{local_ip: nil}) do

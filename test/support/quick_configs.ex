@@ -52,7 +52,8 @@ defmodule FlameEC2.QuickConfigs do
       instance_metadata_url: "http://localhost:1338/latest/meta-data",
       instance_metadata_token_url: "http://localhost:1338/latest/api/token",
       ec2_service_endpoint: "http://localhost:4566/ec2",
-      app: :local_testing
+      app: :local_testing,
+      s3_bundle_url: "s3://code/release.tar.gz"
     )
   end
 end

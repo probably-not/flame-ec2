@@ -158,12 +158,11 @@ defmodule FlameEC2 do
     remaining_connect_window = state.config.boot_timeout - req_connect_time
 
     case resp do
-      %{"id" => id, "instance_id" => instance_id, "instance_ip" => ip} ->
+      %{"instanceId" => instance_id, "privateIpAddress" => ip} ->
         new_state =
           %BackendState{
             state
-            | runner_id: id,
-              runner_instance_id: instance_id,
+            | runner_instance_id: instance_id,
               runner_instance_ip: ip
           }
 

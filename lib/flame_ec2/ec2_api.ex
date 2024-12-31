@@ -33,6 +33,9 @@ defmodule FlameEC2.EC2Api do
         |> Req.new()
         |> Req.request()
         |> raise_or_response!()
+        |> Map.fetch!("RunInstancesResponse")
+        |> Map.fetch!("instancesSet")
+        |> Map.fetch!("item")
     end
   end
 

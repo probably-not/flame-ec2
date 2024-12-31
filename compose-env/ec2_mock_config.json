@@ -2,9 +2,9 @@
   "metadata": {
     "values": {
       "instance-type": "t3.nano",
-      "mac-security-group-ids": "sg-5ecd095c8a4bc5725",
-      "mac-subnet-id": "subnet-49da2252",
-      "mac-vpc-id": "vpc-cbabee48"
+      "mac-security-group-ids": "sg-0f54365779d57f058",
+      "mac-subnet-id": "subnet-c8710f3c",
+      "mac-vpc-id": "vpc-d15c60e1"
     }
   }
 }

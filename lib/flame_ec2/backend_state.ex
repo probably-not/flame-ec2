@@ -9,7 +9,6 @@ defmodule FlameEC2.BackendState do
             runner_node_name: nil,
             parent_ref: nil,
             runner_env: nil,
-            runner_id: nil,
             runner_instance_id: nil,
             runner_instance_ip: nil,
             remote_terminator_pid: nil

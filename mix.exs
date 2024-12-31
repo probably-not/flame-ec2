@@ -34,7 +34,7 @@ defmodule FlameEC2.MixProject do
   end
 
   defp elixirc_path(:test), do: ["lib/", "test/support", "bench/"]
-  defp elixirc_path(:dev), do: ["lib/", "bench/"]
+  defp elixirc_path(:dev), do: ["lib/", "test/support", "bench/"]
   defp elixirc_path(_), do: ["lib/"]
 
   # Run "mix help compile.app" to learn about applications.
@@ -61,7 +61,13 @@ defmodule FlameEC2.MixProject do
       {:remixed_remix, "~> 2.0.2", only: :dev},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:benchee, "~> 1.0", only: :dev},
-      {:benchee_markdown, "~> 0.3", only: :dev}
+      {:benchee_markdown, "~> 0.3", only: :dev},
+      # We use the AWS client in order to do things in dev and test
+      # like syncing between the EC2 Instance Metadata and the LocalStack.
+      # It is a dev/test only dependency, and should not be part of the production
+      # compilation to avoid adding a massive overhead to the package.
+      {:aws, "~> 1.0.0", only: [:dev, :test]},
+      {:hackney, "~> 1.18", only: [:dev, :test]}
     ]
   end
 

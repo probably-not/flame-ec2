@@ -9,6 +9,11 @@ services:
     restart: always
     ports:
       - "1338:1338"
+    volumes:
+      - type: bind
+        source: ./compose-env/
+        target: /compose-env/
+    command: ["-c", "/compose-env/ec2_mock_config.json", "-s", "-w"]
 
   localstack:
     image: localstack/localstack

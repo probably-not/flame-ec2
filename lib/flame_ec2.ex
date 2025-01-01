@@ -75,6 +75,9 @@ defmodule FlameEC2 do
   however, you likely want to change this to something that's more appropriate for your pool's workload.
 
   * `:iam_instance_profile` - The ARN of the instance profile to assign to this machine.
+  You must ensure that this instance profile is set to a profile which can access whatever your FLAME nodes will need.
+  When auto-configured, it will be set to the current machine's instance profile, however, in some cases this profile may
+  be too broad and you may want to create a role specific to the FLAME nodes.
 
   * `:key_name` - The name of the key pair to use for you to be able to connect to the instance.
   This is not required, however, an instance that was created without a key pair will be inaccessible without another way to log in.

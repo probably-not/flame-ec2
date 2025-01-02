@@ -111,3 +111,11 @@ jobs:
         run: epmd -daemon
       - name: Run tests
         run: mix test
+      - name: Generate systemd Service Example
+        run: mix run scripts/systemd_service.exs
+      - name: systemd-analyze of Service Example
+        run: systemd-analyze verify example_systemd_service.service
+      - name: Generate start.sh Script Example
+        run: mix run scripts/start_sh.exs
+      - name: Shellcheck Lint of Example start.sh
+        run: shellcheck example_start.sh

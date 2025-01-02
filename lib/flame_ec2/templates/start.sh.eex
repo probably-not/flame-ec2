@@ -2,4 +2,150 @@
 
 set -e
 
-echo "<%= @app %>"
+log() {
+    logger -s -t "flame_ec2_init" "$1"
+}
+
+detect_package_manager() {
+    if command -v apt-get >/dev/null 2>&1; then
+        echo "apt"
+    elif command -v yum >/dev/null 2>&1; then
+        echo "yum"
+    elif command -v dnf >/dev/null 2>&1; then
+        echo "dnf"
+    else
+        echo "unknown"
+        exit 1
+    fi
+}
+
+install_packages() {
+    pm=$(detect_package_manager)
+
+    case $pm in
+        "apt")
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update || {
+                log "Failed to update apt repositories"
+                exit 1
+            }
+            apt-get install -y awscli tar gzip || {
+                log "Failed to install required packages"
+                exit 1
+            }
+            ;;
+        "yum"|"dnf")
+            $pm update -y || {
+                log "Failed to update $pm repositories"
+                exit 1
+            }
+            $pm install -y aws-cli tar gzip || {
+                log "Failed to install required packages"
+                exit 1
+            }
+            ;;
+    esac
+}
+
+log "Initializing EC2 Flame Node for <%= @app %>"
+
+log "Installing required packages..."
+install_packages
+
+if ! command -v aws >/dev/null 2>&1; then
+    log "AWS CLI installation failed"
+    exit 1
+fi
+
+aws configure set default.region <%= @aws_region %>
+
+S3_URL=<%= @s3_bundle_url %>
+APP_DIR="/srv/<%= @app %>"
+SERVICE_NAME=<%= @app %>
+RELEASE_DIR="${APP_DIR}/release"
+
+mkdir -p "${APP_DIR}" || {
+    log "Failed to create ${APP_DIR}"
+    exit 1
+}
+
+cd "${APP_DIR}" || {
+    log "Failed to change to ${APP_DIR}"
+    exit 1
+}
+
+log "Downloading from S3: ${S3_URL}"
+
+<%= if @s3_bundle_compressed do %>
+S3_TYPE="compressed"
+<% else %>
+S3_TYPE="directory"
+<% end %>
+
+if [ "${S3_TYPE}" = "directory" ]; then
+    aws s3 sync ${S3_URL} . || {
+      log "Failed to download from S3"
+      exit 1
+  }
+else
+    aws s3 cp ${S3_URL} ./release.tar.gz || {
+      log "Failed to download from S3"
+      exit 1
+    }
+    tar xzf release.tar.gz || {
+      log "Failed to extract release.tar.gz"
+      rm -f release.tar.gz
+      exit 1
+    }
+    rm release.tar.gz
+fi
+
+if [ ! -d "${RELEASE_DIR}" ]; then
+    log "Release directory ${RELEASE_DIR} not found after extraction"
+    exit 1
+fi
+
+if [ ! -x "${RELEASE_DIR}/bin/<%= @app %>" ]; then
+    log "Executable ${RELEASE_DIR}/bin/<%= @app %> not found or not executable"
+    exit 1
+fi
+
+touch "${APP_DIR}/env" || {
+    log "Failed to create env file"
+    exit 1
+}
+
+if ! cat > /etc/systemd/system/${SERVICE_NAME}.service << EOF
+<%= @systemd_service %>
+EOF
+then
+    log "Failed to create systemd service file"
+    exit 1
+fi
+
+chmod 755 "${APP_DIR}" || {
+    log "Failed to set permissions on ${APP_DIR}"
+    exit 1
+}
+
+systemctl daemon-reload || {
+    log "Failed to reload systemd"
+    exit 1
+}
+
+systemctl enable "${SERVICE_NAME}" || {
+    log "Failed to enable ${SERVICE_NAME} service"
+    exit 1
+}
+
+systemctl start "${SERVICE_NAME}" || {
+    log "Failed to start ${SERVICE_NAME} service"
+    exit 1
+}
+
+if ! systemctl is-active --quiet "${SERVICE_NAME}"; then
+    log "Service failed to start. Check journalctl for details."
+    exit 1
+fi
+
+log "EC2 Flame Node initialization completed successfully"

@@ -25,3 +25,11 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/flame_ec2>.
 
+## Contributing
+
+Feel free to fork and make PRs! I'm definitely happy to have eyes on this and to get feedback so we can take care of edge cases.
+
+For contributions, ensure that you run `git update-index --skip-worktree compose-env/ec2_mock_config.json`. The mock config gets reset
+and resynced in every `iex` session to ensure that the local compose environment is up to date for localized tests. This means that
+it is constantly changing, and therefore we should not track its changes. However, I do want to ensure that the file is distributed with
+the repository, so that developers don't have to know to create it or have to do any setup before getting started.

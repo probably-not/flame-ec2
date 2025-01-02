@@ -119,8 +119,9 @@ defmodule FlameEC2.Config do
     }
 
     # The config that the user has given has precedence over the config from auto_configure.
-    # This allows the user to override things specifically in the auto configuration, without needing
-    # to configure everything. When the config value is `nil`, we override with whatever is in the auto configured value.
+    # This allows the user to override things specifically in the auto configuration, without
+    # needing to configure everything. When the config value is `nil`, we override with
+    # whatever is in the auto configured value.
     Map.merge(auto_configured, config, fn
       _key, auto_val, nil -> auto_val
       _key, _auto_val, config_val -> config_val

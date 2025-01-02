@@ -1,0 +1,19 @@
+[Unit]
+Description=<%= @app %> service
+After=local-fs.target network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/<%= @app %>/release
+ExecStart=/srv/<%= @app %>/release/bin/<%= @app %> start
+ExecStop=/srv/<%= @app %>/release/bin/<%= @app %> stop
+Environment=LANG=en_US.utf8
+EnvironmentFile=/srv/<%= @app %>/env
+LimitNOFILE=65535
+UMask=0027
+SyslogIdentifier=<%= @app %>
+Restart=no
+ExecStopPost=/usr/bin/systemctl poweroff
+
+[Install]
+WantedBy=multi-user.target

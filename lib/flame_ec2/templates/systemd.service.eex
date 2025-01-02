@@ -5,8 +5,19 @@ After=local-fs.target network.target
 [Service]
 Type=simple
 WorkingDirectory=/srv/<%= @app %>/release
+
+<%= if assigns[:custom_start_command] do %>
+ExecStart=<%= @custom_start_command %>
+<% else %>
 ExecStart=/srv/<%= @app %>/release/bin/<%= @app %> start
+<% end %>
+
+<%= if assigns[:custom_stop_command] do %>
+ExecStop=<%= @custom_stop_command %>
+<% else %>
 ExecStop=/srv/<%= @app %>/release/bin/<%= @app %> stop
+<% end %>
+
 Environment=LANG=en_US.utf8
 EnvironmentFile=/srv/<%= @app %>/env
 LimitNOFILE=65535

@@ -5,6 +5,7 @@ defmodule FlameEC2.EC2Api do
 
   alias FlameEC2.BackendState
   alias FlameEC2.Config
+  alias FlameEC2.Templates
 
   require Logger
 
@@ -70,6 +71,17 @@ defmodule FlameEC2.EC2Api do
   end
 
   defp params_from_config(%Config{} = config) do
+    systemd_service = Templates.systemd_service(app: config.app)
+
+    start_script =
+      Templates.start_script(
+        app: config.app,
+        systemd_service: systemd_service,
+        aws_region: config.aws_region,
+        s3_bundle_url: config.s3_bundle_url,
+        s3_bundle_compressed?: config.s3_bundle_compressed?
+      )
+
     base_params = %{
       "MaxCount" => 1,
       "MinCount" => 1,
@@ -89,7 +101,8 @@ defmodule FlameEC2.EC2Api do
       "IamInstanceProfile" => %{
         "Arn" => config.iam_instance_profile
       },
-      "InstanceInitiatedShutdownBehavior" => "terminate"
+      "InstanceInitiatedShutdownBehavior" => "terminate",
+      "UserData" => Base.encode64(start_script)
     }
 
     Map.merge(base_params, creation_details_params(config))

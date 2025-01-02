@@ -6,7 +6,7 @@ rendered =
     systemd_service: systemd_service,
     aws_region: "us-east-1",
     s3_bundle_url: "s3://code.tar.gz",
-    s3_bundle_compressed: true
+    s3_bundle_compressed?: true
   )
 
 File.write!("./example_start.sh", rendered)

@@ -76,7 +76,7 @@ cd "${APP_DIR}" || {
 
 log "Downloading from S3: ${S3_URL}"
 
-<%= if @s3_bundle_compressed do %>
+<%= if @s3_bundle_compressed? do %>
 S3_TYPE="compressed"
 <% else %>
 S3_TYPE="directory"

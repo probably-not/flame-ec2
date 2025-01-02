@@ -43,7 +43,7 @@ defmodule FlameEC2.Config do
             boot_timeout: nil,
             app: nil,
             s3_bundle_url: nil,
-            s3_bundle_compressed: false,
+            s3_bundle_compressed?: false,
             local_ip: nil,
             instance_metadata_url: nil,
             instance_metadata_token_url: nil,
@@ -141,7 +141,7 @@ defmodule FlameEC2.Config do
   end
 
   defp validate_s3_bundle_url!(%Config{} = config) do
-    %Config{config | s3_bundle_compressed: String.ends_with?(config.s3_bundle_url, ".tar.gz")}
+    %Config{config | s3_bundle_compressed?: String.ends_with?(config.s3_bundle_url, ".tar.gz")}
   end
 
   defp validate_local_ip!(%Config{local_ip: nil}) do

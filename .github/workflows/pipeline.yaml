@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         otp: ["26.2"]
-        elixir: ["1.17.2", "1.16.3", "1.15.8"]
+        elixir: ["1.18.1", "1.17.3", "1.16.3"]
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4

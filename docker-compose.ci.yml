@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  ec2-instance-metadata:
+    # This is a fork of AWS's EC2 Instance Metadata mock, which includes my fixes to allow watching and reloading configs.
+    # When the PR that I opened for them (https://github.com/aws/amazon-ec2-metadata-mock/pull/227) is merged, we can go back
+    # to their version, with the new flags.
+    image: probablynot/ec2-metadata-mock:v1.12.0-8-ga79ee1f-linux-amd64
+    restart: always
+    ports:
+      - "1338:1338"
+    volumes:
+      - type: bind
+        source: ./compose-env/
+        target: /compose-env/
+    command: ["-c", "/compose-env/ec2_mock_config.json", "-s", "-w"]
+
+  localstack:
+    image: localstack/localstack
+    restart: always
+    ports:
+      - "4566:4566"
+      - "4510-4559:4510-4559"
+    environment:
+      - DEBUG=0
+    healthcheck:
+      test: ["CMD", "bash", "-c", "awslocal s3api list-buckets"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s

@@ -86,11 +86,15 @@ defmodule FlameEC2.Config do
         "placement"
       ])
 
-    %Config{
-      config
-      | local_ip: metadata["local-ipv4"],
-        aws_region: metadata["placement"]["region"]
+    auto_configured = %Config{
+      local_ip: metadata["local-ipv4"],
+      aws_region: metadata["placement"]["region"]
     }
+
+    Map.merge(auto_configured, config, fn
+      _key, auto_val, nil -> auto_val
+      _key, _auto_val, config_val -> config_val
+    end)
   end
 
   defp maybe_auto_configure!(%Config{} = config) do
@@ -104,16 +108,23 @@ defmodule FlameEC2.Config do
         JSON.decode!(info_json)["InstanceProfileArn"]
       end
 
-    %Config{
-      config
-      | image_id: metadata["ami-id"],
-        subnet_id: network_interface["subnet-id"],
-        security_group_id: network_interface["security-group-ids"],
-        instance_type: metadata["instance-type"],
-        iam_instance_profile: iam_instance_profile,
-        local_ip: metadata["local-ipv4"],
-        aws_region: metadata["placement"]["region"]
+    auto_configured = %Config{
+      image_id: metadata["ami-id"],
+      subnet_id: network_interface["subnet-id"],
+      security_group_id: network_interface["security-group-ids"],
+      instance_type: metadata["instance-type"],
+      iam_instance_profile: iam_instance_profile,
+      local_ip: metadata["local-ipv4"],
+      aws_region: metadata["placement"]["region"]
     }
+
+    # The config that the user has given has precedence over the config from auto_configure.
+    # This allows the user to override things specifically in the auto configuration, without needing
+    # to configure everything. When the config value is `nil`, we override with whatever is in the auto configured value.
+    Map.merge(auto_configured, config, fn
+      _key, auto_val, nil -> auto_val
+      _key, _auto_val, config_val -> config_val
+    end)
   end
 
   defp validate_app_name!(%Config{app: nil}) do

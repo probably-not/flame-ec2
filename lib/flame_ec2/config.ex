@@ -18,6 +18,7 @@ defmodule FlameEC2.Config do
     :instance_type,
     :iam_instance_profile,
     :key_name,
+    :aws_region,
     :env,
     :boot_timeout,
     :app,
@@ -37,6 +38,7 @@ defmodule FlameEC2.Config do
             instance_type: nil,
             iam_instance_profile: nil,
             key_name: nil,
+            aws_region: nil,
             env: %{},
             boot_timeout: nil,
             app: nil,
@@ -80,12 +82,14 @@ defmodule FlameEC2.Config do
   defp maybe_auto_configure!(%Config{auto_configure: false} = config) do
     {:ok, %{} = metadata} =
       InstanceMetadata.get(config.instance_metadata_url, config.instance_metadata_token_url, [
-        "local-ipv4"
+        "local-ipv4",
+        "placement"
       ])
 
     %Config{
       config
-      | local_ip: metadata["local-ipv4"]
+      | local_ip: metadata["local-ipv4"],
+        aws_region: metadata["placement"]["region"]
     }
   end
 
@@ -107,7 +111,8 @@ defmodule FlameEC2.Config do
         security_group_id: network_interface["security-group-ids"],
         instance_type: metadata["instance-type"],
         iam_instance_profile: iam_instance_profile,
-        local_ip: metadata["local-ipv4"]
+        local_ip: metadata["local-ipv4"],
+        aws_region: metadata["placement"]["region"]
     }
   end
 

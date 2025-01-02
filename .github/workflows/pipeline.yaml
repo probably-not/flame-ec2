@@ -109,6 +109,11 @@ jobs:
         run: mix dialyzer --format github
       - name: Start EPMD for tests
         run: epmd -daemon
+      - name: Initialize Docker Compose Environment for Testing
+        run: docker-compose up -d
+      - name: Sleep for 30 seconds to allow compose environment to launch
+        run: sleep 30s
+        shell: bash
       - name: Run tests
         run: mix test
       - name: Generate systemd Service Example

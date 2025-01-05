@@ -35,8 +35,15 @@ defmodule FlameEC2.QuickConfigs do
       |> File.read!()
       |> Jason.decode!()
 
+    ami_id = "ami-flametest123"
+    instance_type = "m5.24xlarge"
+    local_ipv4 = "10.0.1.1"
+
     metadata =
       metadata
+      |> put_in(["metadata", "values", "ami-id"], ami_id)
+      |> put_in(["metadata", "values", "instance-type"], instance_type)
+      |> put_in(["metadata", "values", "local-ipv4"], local_ipv4)
       |> put_in(["metadata", "values", "mac-vpc-id"], vpc_id)
       |> put_in(["metadata", "values", "mac-subnet-id"], subnet_id)
       |> put_in(["metadata", "values", "mac-security-group-ids"], security_group_id)
@@ -44,6 +51,15 @@ defmodule FlameEC2.QuickConfigs do
     metadata
     |> Jason.encode!(pretty: true, maps: :strict)
     |> then(&File.write!(path, &1))
+
+    [
+      vpc_id: vpc_id,
+      subnet_id: subnet_id,
+      security_group_id: security_group_id,
+      ami_id: ami_id,
+      instance_type: instance_type,
+      local_ipv4: local_ipv4
+    ]
   end
 
   def local_auto_configure do

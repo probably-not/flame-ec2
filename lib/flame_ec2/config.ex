@@ -54,7 +54,6 @@ defmodule FlameEC2.Config do
       auto_configure: false,
       log: Keyword.get(config, :log, false),
       launch_template_version: "$Default",
-      instance_type: "t3.nano",
       boot_timeout: 120_000,
       app: System.get_env("RELEASE_NAME"),
       instance_metadata_url: "http://169.254.169.254/latest/meta-data/",
@@ -88,7 +87,8 @@ defmodule FlameEC2.Config do
 
     auto_configured = %Config{
       local_ip: metadata["local-ipv4"],
-      aws_region: metadata["placement"]["region"]
+      aws_region: metadata["placement"]["region"],
+      instance_type: "t3.nano"
     }
 
     Map.merge(auto_configured, config, fn
@@ -112,7 +112,7 @@ defmodule FlameEC2.Config do
       image_id: metadata["ami-id"],
       subnet_id: network_interface["subnet-id"],
       security_group_id: network_interface["security-group-ids"],
-      instance_type: metadata["instance-type"],
+      instance_type: metadata["instance-type"] || "t3.nano",
       iam_instance_profile: iam_instance_profile,
       local_ip: metadata["local-ipv4"],
       aws_region: metadata["placement"]["region"]

@@ -1,6 +1,19 @@
 defmodule FlameEC2.QuickConfigs do
   @moduledoc false
 
+  def simple_valid_config do
+    [
+      app: :flame_ec2,
+      s3_bundle_url: "s3://code-bucket/code.tar.gz",
+      subnet_id: "subnet-123",
+      security_group_id: "sg-123",
+      image_id: "ami-123",
+      instance_metadata_url: "http://localhost:1338/latest/meta-data",
+      instance_metadata_token_url: "http://localhost:1338/latest/api/token",
+      ec2_service_endpoint: "http://localhost:4566/ec2"
+    ]
+  end
+
   def sync_localstack_with_ec2_mock do
     client =
       "xxxxxxxxxxxx"

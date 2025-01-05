@@ -3,17 +3,6 @@ defmodule FlameEC2.ConfigTest do
 
   doctest FlameEC2.Config
 
-  @valid_config [
-    app: :flame_ec2,
-    s3_bundle_url: "s3://code-bucket/code.tar.gz",
-    subnet_id: "subnet-123",
-    security_group_id: "sg-123",
-    image_id: "ami-123",
-    instance_metadata_url: "http://localhost:1338/latest/meta-data",
-    instance_metadata_token_url: "http://localhost:1338/latest/api/token",
-    ec2_service_endpoint: "http://localhost:4566/ec2"
-  ]
-
   setup_all do
     FlameEC2.QuickConfigs.sync_localstack_with_ec2_mock()
   end
@@ -23,7 +12,7 @@ defmodule FlameEC2.ConfigTest do
   end
 
   test "valid configuration" do
-    config = FlameEC2.Config.new(@valid_config, [])
+    config = FlameEC2.Config.new(FlameEC2.QuickConfigs.simple_valid_config(), [])
 
     assert config.app == :flame_ec2
     assert config.s3_bundle_url == "s3://code-bucket/code.tar.gz"
@@ -37,16 +26,26 @@ defmodule FlameEC2.ConfigTest do
   end
 
   test "s3 bundle compressed?" do
-    config = FlameEC2.Config.new(Keyword.put(@valid_config, :s3_bundle_url, "s3://code-bucket/code"), [])
+    config =
+      FlameEC2.Config.new(
+        Keyword.put(FlameEC2.QuickConfigs.simple_valid_config(), :s3_bundle_url, "s3://code-bucket/code"),
+        []
+      )
+
     assert not config.s3_bundle_compressed?
 
-    config = FlameEC2.Config.new(Keyword.put(@valid_config, :s3_bundle_url, "s3://code-bucket/code.tar.gz"), [])
+    config =
+      FlameEC2.Config.new(
+        Keyword.put(FlameEC2.QuickConfigs.simple_valid_config(), :s3_bundle_url, "s3://code-bucket/code.tar.gz"),
+        []
+      )
+
     assert config.s3_bundle_compressed?
   end
 
   test "environment variables" do
     env = %{"MY_ENV_1" => "123", "MY_ENV_2" => "456", "MY_ENV_3" => "789"}
-    config = FlameEC2.Config.new(Keyword.put(@valid_config, :env, env), [])
+    config = FlameEC2.Config.new(Keyword.put(FlameEC2.QuickConfigs.simple_valid_config(), :env, env), [])
 
     assert config.env == env
   end
@@ -56,11 +55,11 @@ defmodule FlameEC2.ConfigTest do
       assert_raise ArgumentError,
                    "You must specify either the image_id or the launch_template_id for the FlameEC2 backend",
                    fn ->
-                     FlameEC2.Config.new(Keyword.delete(@valid_config, :image_id), [])
+                     FlameEC2.Config.new(Keyword.delete(FlameEC2.QuickConfigs.simple_valid_config(), :image_id), [])
                    end
 
       with_launch_template =
-        @valid_config
+        FlameEC2.QuickConfigs.simple_valid_config()
         |> Keyword.delete(:image_id)
         |> Keyword.put(:launch_template_id, "template-123")
         |> FlameEC2.Config.new([])
@@ -70,7 +69,7 @@ defmodule FlameEC2.ConfigTest do
 
     test "launch template takes precedence" do
       with_launch_template =
-        @valid_config
+        FlameEC2.QuickConfigs.simple_valid_config()
         |> Keyword.put(:launch_template_id, "template-123")
         |> FlameEC2.Config.new([])
 
@@ -85,7 +84,7 @@ defmodule FlameEC2.ConfigTest do
     for key <- must_specify_keys do
       test "no #{key} is invalid" do
         assert_raise ArgumentError, ~r/^You must specify/, fn ->
-          FlameEC2.Config.new(Keyword.delete(@valid_config, unquote(key)), [])
+          FlameEC2.Config.new(Keyword.delete(FlameEC2.QuickConfigs.simple_valid_config(), unquote(key)), [])
         end
       end
     end

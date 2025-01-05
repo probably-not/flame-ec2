@@ -72,11 +72,13 @@ defmodule FlameEC2.EC2Api do
 
   defp params_from_config(%Config{} = config) do
     systemd_service = Templates.systemd_service(app: config.app)
+    env = Templates.env(vars: config.env)
 
     start_script =
       Templates.start_script(
         app: config.app,
         systemd_service: systemd_service,
+        env: env,
         aws_region: config.aws_region,
         s3_bundle_url: config.s3_bundle_url,
         s3_bundle_compressed?: config.s3_bundle_compressed?

@@ -110,8 +110,11 @@ if [ ! -x "${RELEASE_DIR}/bin/<%= @app %>" ]; then
     exit 1
 fi
 
+INSTANCE_IP=$(hostname -i)
+
 if ! cat > ${APP_DIR}/env << EOF
 <%= @env %>
+INSTANCE_IP=${INSTANCE_IP}
 EOF
 then
     log "Failed to create env file"

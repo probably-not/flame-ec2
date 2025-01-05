@@ -101,7 +101,8 @@ defmodule FlameEC2.Config do
     {:ok, %{} = metadata} =
       InstanceMetadata.get(config.instance_metadata_url, config.instance_metadata_token_url)
 
-    {_mac_address, network_interface} = Enum.at(metadata["network"]["interfaces"]["macs"], 0, %{})
+    macs = metadata["network"]["interfaces"]["macs"] || []
+    {_mac_address, network_interface} = Enum.at(macs, 0, %{})
 
     iam_instance_profile =
       if info_json = metadata["iam"]["info"] do

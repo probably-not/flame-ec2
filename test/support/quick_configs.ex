@@ -65,6 +65,15 @@ defmodule FlameEC2.QuickConfigs do
     |> Jason.encode!(pretty: true, maps: :strict)
     |> then(&File.write!(path, &1))
 
+    # We sleep, to make sure that the change has been caught by the local dev stack.
+    # Some people may say, well, this is stupid, why are we sleeping inside the code.
+    # The answer is simple, this is test code, and we want to make sure that we sleep
+    # to allow the external container to update itself with the new configurations.
+    # This doesn't affect the test itself - i.e. we aren't sleeping to ensure that
+    # stuff has happened, this happens as part of the setup for tests, so that the
+    # external dependencies are all ready to go when the tests actually run.
+    Process.sleep(10_000)
+
     [
       vpc_id: vpc_id,
       subnet_id: subnet_id,

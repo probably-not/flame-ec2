@@ -21,7 +21,7 @@ defmodule FlameEC2.BackendState do
 
     encoded_parent =
       parent_ref
-      |> FLAME.Parent.new(self(), __MODULE__, runner_node_base, "INSTANCE_IP")
+      |> FLAME.Parent.new(self(), FlameEC2, runner_node_base, "INSTANCE_IP")
       |> FLAME.Parent.encode()
 
     %BackendState{

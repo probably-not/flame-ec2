@@ -4,7 +4,7 @@ defmodule FlameEC2.MixProject do
   def project do
     [
       app: :flame_ec2,
-      version: "0.0.1-rc-4",
+      version: "0.0.1-rc-5",
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_path(Mix.env()),

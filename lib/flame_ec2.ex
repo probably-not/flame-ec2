@@ -29,6 +29,52 @@ defmodule FlameEC2 do
 
   ```json
   {
+      "Version": "2012-10-17",
+      "Statement": [
+          {
+              "Sid": "ec2RunInstances",
+              "Effect": "Allow",
+              "Action": [
+                  "ec2:DescribeTags",
+                  "ec2:CreateTags",
+                  "ec2:DeleteTags",
+                  "ec2:RunInstances"
+              ],
+              "Resource": "*"
+          },
+          {
+              "Sid": "ssmParameters",
+              "Effect": "Allow",
+              "Action": [
+                  "ssm:GetParameters"
+              ],
+              "Resource": "*"
+          },
+          {
+              "Sid": "iamRolePassing",
+              "Effect": "Allow",
+              "Action": [
+                  "iam:PassRole"
+              ],
+              "Resource": [
+                  "arn:aws:iam::*:instance-profile/*"
+              ],
+              "Condition": {
+                  "StringEquals": {
+                      "iam:PassedToService": "ec2.amazonaws.com"
+                  }
+              }
+          },
+          {
+              "Sid": "s3GetRelease",
+              "Effect": "Allow",
+              "Action": [
+                  "s3:ListBucket",
+                  "s3:GetObject"
+              ],
+              "Resource": "*"
+          }
+      ]
   }
   ```
 

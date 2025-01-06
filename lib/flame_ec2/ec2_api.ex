@@ -10,12 +10,11 @@ defmodule FlameEC2.EC2Api do
   require Logger
 
   def run_instances!(%BackendState{} = state) do
-    params = build_query_from_state(state)
+    params = build_params_from_state(state)
 
     uri =
       state.config.ec2_service_endpoint
       |> URI.new!()
-      |> URI.append_query(params)
       |> URI.to_string()
 
     credentials = :aws_credentials.get_credentials()
@@ -27,7 +26,8 @@ defmodule FlameEC2.EC2Api do
       %{} ->
         [
           url: uri,
-          method: :get,
+          method: :post,
+          form: params,
           headers: [{:accept, "application/json"}],
           aws_sigv4: Map.put_new(credentials, :service, "ec2")
         ]
@@ -40,14 +40,13 @@ defmodule FlameEC2.EC2Api do
     end
   end
 
-  def build_query_from_state(%BackendState{} = state) do
+  def build_params_from_state(%BackendState{} = state) do
     state.config
     |> params_from_config()
     |> Map.merge(instance_tags(state))
     |> Map.put("Action", "RunInstances")
     |> flatten_json_object()
     |> Map.filter(fn {_k, v} -> not is_nil(v) end)
-    |> URI.encode_query()
   end
 
   defp instance_tags(%BackendState{} = state) do

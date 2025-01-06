@@ -23,18 +23,17 @@ defmodule FlameEC2.EC2ApiTest do
     config = FlameEC2.QuickConfigs.simple_valid_config()
     state = FlameEC2.BackendState.new(config, [])
 
-    query = FlameEC2.EC2Api.build_query_from_state(state)
-    parsed = URI.decode_query(query)
+    parsed = FlameEC2.EC2Api.build_params_from_state(state)
 
     assert parsed["Action"] == "RunInstances"
     assert parsed["ImageId"] == "ami-123"
     assert parsed["InstanceType"] == "t3.nano"
-    assert parsed["MaxCount"] == "1"
-    assert parsed["MinCount"] == "1"
+    assert parsed["MaxCount"] == 1
+    assert parsed["MinCount"] == 1
 
-    assert parsed["NetworkInterface.1.AssociatePublicIpAddress"] == "false"
-    assert parsed["NetworkInterface.1.DeleteOnTermination"] == "true"
-    assert parsed["NetworkInterface.1.DeviceIndex"] == "0"
+    assert parsed["NetworkInterface.1.AssociatePublicIpAddress"] == false
+    assert parsed["NetworkInterface.1.DeleteOnTermination"] == true
+    assert parsed["NetworkInterface.1.DeviceIndex"] == 0
     assert parsed["NetworkInterface.1.SubnetId"] == "subnet-123"
     assert parsed["NetworkInterface.1.SecurityGroupId.1"] == "sg-123"
 
@@ -42,7 +41,7 @@ defmodule FlameEC2.EC2ApiTest do
     assert parsed["TagSpecification.1.Tag.1.Key"] == "FLAME_PARENT_IP"
     assert parsed["TagSpecification.1.Tag.1.Value"] == context[:local_ipv4]
     assert parsed["TagSpecification.1.Tag.2.Key"] == "FLAME_PARENT_APP"
-    assert parsed["TagSpecification.1.Tag.2.Value"] == "flame_ec2"
+    assert parsed["TagSpecification.1.Tag.2.Value"] == :flame_ec2
 
     assert parsed["UserData"]
     {:ok, decoded} = Base.decode64(parsed["UserData"])
@@ -72,8 +71,7 @@ defmodule FlameEC2.EC2ApiTest do
 
     state = FlameEC2.BackendState.new(config, [])
 
-    query = FlameEC2.EC2Api.build_query_from_state(state)
-    parsed = URI.decode_query(query)
+    parsed = FlameEC2.EC2Api.build_params_from_state(state)
 
     assert parsed["LaunchTemplate.LaunchTemplateId"] == "lt-123"
     assert parsed["LaunchTemplate.Version"] == "1"

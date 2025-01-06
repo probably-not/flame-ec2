@@ -73,6 +73,11 @@ mkdir -p "${APP_DIR}" || {
     exit 1
 }
 
+mkdir -p "${RELEASE_DIR}" || {
+    log "Failed to create ${RELEASE_DIR}"
+    exit 1
+}
+
 cd "${APP_DIR}" || {
     log "Failed to change to ${APP_DIR}"
     exit 1
@@ -96,7 +101,7 @@ else
       log "Failed to download from S3"
       exit 1
     }
-    tar xzf release.tar.gz || {
+    tar xzf release.tar.gz -C ${RELEASE_DIR} || {
       log "Failed to extract release.tar.gz"
       rm -f release.tar.gz
       exit 1

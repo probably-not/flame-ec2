@@ -29,7 +29,7 @@ install_packages() {
                 log "Failed to update apt repositories"
                 exit 1
             }
-            apt-get install -y awscli tar gzip || {
+            apt-get install -y tar gzip unzip || {
                 log "Failed to install required packages"
                 exit 1
             }
@@ -39,12 +39,16 @@ install_packages() {
                 log "Failed to update $pm repositories"
                 exit 1
             }
-            $pm install -y aws-cli tar gzip || {
+            $pm install -y tar gzip unzip || {
                 log "Failed to install required packages"
                 exit 1
             }
             ;;
     esac
+
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    ./aws/install
 }
 
 log "Initializing EC2 Flame Node for <%= @app %>"

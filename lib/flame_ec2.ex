@@ -57,7 +57,8 @@ defmodule FlameEC2 do
                   "iam:PassRole"
               ],
               "Resource": [
-                  "arn:aws:iam::*:instance-profile/*"
+                  "arn:aws:iam::*:instance-profile/*",
+                  "arn:aws:iam::*:role/*"
               ],
               "Condition": {
                   "StringEquals": {

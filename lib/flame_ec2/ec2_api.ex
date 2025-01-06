@@ -5,6 +5,7 @@ defmodule FlameEC2.EC2Api do
 
   alias FlameEC2.BackendState
   alias FlameEC2.Config
+  alias FlameEC2.EC2Api.XML
   alias FlameEC2.Templates
 
   require Logger
@@ -28,12 +29,12 @@ defmodule FlameEC2.EC2Api do
           url: uri,
           method: :post,
           form: params,
-          headers: [{:accept, "application/json"}],
           aws_sigv4: Map.put_new(credentials, :service, "ec2")
         ]
         |> Req.new()
         |> Req.request()
         |> raise_or_response!()
+        |> Map.fetch!(:body)
         |> Map.fetch!("RunInstancesResponse")
         |> Map.fetch!("instancesSet")
         |> Map.fetch!("item")
@@ -132,11 +133,27 @@ defmodule FlameEC2.EC2Api do
   end
 
   defp raise_or_response!({:ok, %Req.Response{} = resp}) do
-    resp.body
+    if xml?(resp) do
+      update_in(resp.body, &XML.decode!/1)
+    else
+      resp
+    end
   end
 
   defp raise_or_response!({:error, exception}) do
     Logger.error("Failed to create instance with exception: #{inspect(exception)}")
     raise exception
+  end
+
+  # Adapted from https://github.com/livebook-dev/livebook/blob/v0.14.5/lib/livebook/file_system/s3/client.ex
+  defp xml?(response) do
+    guess_xml? = String.starts_with?(response.body, "<?xml")
+
+    case FlameEC2.EC2Api.Utils.fetch_content_type(response) do
+      {:ok, content_type} when content_type in ["text/xml", "application/xml"] -> true
+      # Apparently some requests return XML without content-type
+      :error when guess_xml? -> true
+      _otherwise -> false
+    end
   end
 end

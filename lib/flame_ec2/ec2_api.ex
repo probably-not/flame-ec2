@@ -85,6 +85,7 @@ defmodule FlameEC2.EC2Api do
       )
 
     base_params = %{
+      "Version" => "2016-11-15",
       "MaxCount" => 1,
       "MinCount" => 1,
       "KeyName" => config.key_name,

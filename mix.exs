@@ -45,7 +45,7 @@ defmodule FlameEC2.MixProject do
   end
 
   defp applications(:dev), do: applications(:all) ++ [:remixed_remix, :runtime_tools]
-  defp applications(_all), do: [:logger]
+  defp applications(_all), do: [:logger, :xmerl]
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do

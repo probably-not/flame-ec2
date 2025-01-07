@@ -116,7 +116,13 @@ defmodule FlameEC2 do
 
   ### Optional Configurations
 
-  * `:boot_timeout` - A timeout for booting a new node. Defaults to 120_000.
+  * `:boot_timeout` - A timeout for booting a new node. Defaults to 120_000 (2 minutes).
+  **Note!** The boot timeout must account for things like the actual initialization of an instance.
+  Instances can take a couple of minutes to move from "Pending" to "Running" depending on capacity,
+  and that doesn't include the actual instance initialization and the script that needs to run to set
+  up the release on the machine. When using FlameEC2, you may want to consider setting this value to something
+  that is higher to avoid timeout issues due to slowness of machine startups, or setting the pool minimum to 1
+  to ensure that you have a "warm" pool of instances that can run tasks.
 
   * `:instance_type` - The instance type that should be used. Defaults to "t3.nano", which falls under the AWS free tier,
   however, you likely want to change this to something that's more appropriate for your pool's workload.

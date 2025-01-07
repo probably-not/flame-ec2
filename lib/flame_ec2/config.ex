@@ -25,7 +25,10 @@ defmodule FlameEC2.Config do
     :s3_bundle_url,
     :instance_metadata_url,
     :instance_metadata_token_url,
-    :ec2_service_endpoint
+    :ec2_service_endpoint,
+    # We don't use this, but it seems to be passed in automatically as part of the config options.
+    # In the FLAME.FlyBackend it's only found in the valid opts list, and isn't found anywhere else in the code.
+    :terminator_sup
   ]
 
   defstruct auto_configure: false,

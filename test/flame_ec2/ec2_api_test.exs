@@ -47,7 +47,7 @@ defmodule FlameEC2.EC2ApiTest do
     {:ok, decoded} = Base.decode64(parsed["UserData"])
 
     systemd_service = FlameEC2.Templates.systemd_service(app: state.config.app)
-    env = FlameEC2.Templates.env(vars: state.config.env)
+    env = FlameEC2.Templates.env(vars: state.runner_env)
 
     start_script =
       FlameEC2.Templates.start_script(

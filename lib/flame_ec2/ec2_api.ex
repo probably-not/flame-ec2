@@ -43,7 +43,7 @@ defmodule FlameEC2.EC2Api do
 
   def build_params_from_state(%BackendState{} = state) do
     state.config
-    |> params_from_config()
+    |> params_from_config(state.runner_env)
     |> Map.merge(instance_tags(state))
     |> Map.put("Action", "RunInstances")
     |> flatten_json_object()
@@ -70,9 +70,9 @@ defmodule FlameEC2.EC2Api do
     }
   end
 
-  defp params_from_config(%Config{} = config) do
+  defp params_from_config(%Config{} = config, env) do
     systemd_service = Templates.systemd_service(app: config.app)
-    env = Templates.env(vars: config.env)
+    env = Templates.env(vars: env)
 
     start_script =
       Templates.start_script(

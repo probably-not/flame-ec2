@@ -31,6 +31,25 @@ defmodule FlameEC2.Config do
     :terminator_sup
   ]
 
+  @derive {Inspect,
+           only: [
+             :auto_configure,
+             :image_id,
+             :launch_template_id,
+             :launch_template_version,
+             :subnet_id,
+             :security_group_id,
+             :instance_type,
+             :iam_instance_profile,
+             :key_name,
+             :aws_region,
+             :boot_timeout,
+             :app,
+             :s3_bundle_url,
+             :s3_bundle_compressed?,
+             :local_ip
+           ]}
+
   defstruct auto_configure: false,
             log: nil,
             image_id: nil,

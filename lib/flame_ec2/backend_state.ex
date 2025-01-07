@@ -3,6 +3,7 @@ defmodule FlameEC2.BackendState do
 
   alias __MODULE__
   alias FlameEC2.Config
+  alias FlameEC2.Utils
 
   defstruct config: nil,
             runner_node_base: nil,
@@ -16,6 +17,8 @@ defmodule FlameEC2.BackendState do
   def new(opts, app_config) do
     config = Config.new(opts, app_config)
 
+    Utils.log(config, "Initialized FlameEC2 with config #{inspect(config)}")
+
     runner_node_base = "#{config.app}-flame-#{rand_id(20)}"
     parent_ref = make_ref()
 
@@ -24,11 +27,14 @@ defmodule FlameEC2.BackendState do
       |> FLAME.Parent.new(self(), FlameEC2, runner_node_base, "INSTANCE_IP")
       |> FLAME.Parent.encode()
 
+    runner_env = build_env(encoded_parent, config)
+    Utils.log(config, "FlameEC2 runner environment for runners: #{inspect(runner_env)}")
+
     %BackendState{
       config: config,
       runner_node_base: runner_node_base,
       parent_ref: parent_ref,
-      runner_env: build_env(encoded_parent, config)
+      runner_env: runner_env
     }
   end
 

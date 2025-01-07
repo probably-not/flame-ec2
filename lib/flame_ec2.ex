@@ -170,6 +170,7 @@ defmodule FlameEC2 do
 
   alias FlameEC2.BackendState
   alias FlameEC2.EC2Api
+  alias FlameEC2.Utils
 
   require Logger
 
@@ -215,12 +216,7 @@ defmodule FlameEC2 do
         EC2Api.run_instances!(state)
       end)
 
-    if state.config.log do
-      Logger.log(
-        state.config.log,
-        "#{inspect(__MODULE__)} #{inspect(node())} EC2 instance created in #{req_connect_time}ms"
-      )
-    end
+    Utils.log(state.config, "#{inspect(__MODULE__)} #{inspect(node())} EC2 instance created in #{req_connect_time}ms")
 
     remaining_connect_window = state.config.boot_timeout - req_connect_time
 
@@ -259,13 +255,7 @@ defmodule FlameEC2 do
 
   @impl true
   def handle_info(msg, %BackendState{} = state) do
-    if state.config.log do
-      Logger.log(
-        state.config.log,
-        "Missed message sent to FlameEC2 Process #{self()}: #{inspect(msg)}"
-      )
-    end
-
+    Utils.log(state.config, "Missed message sent to FlameEC2 Process #{self()}: #{inspect(msg)}")
     {:noreply, state}
   end
 end

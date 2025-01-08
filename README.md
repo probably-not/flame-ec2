@@ -14,6 +14,41 @@ See the moduledoc for `FlameEC2` for extensive documentation on different option
 
 The main thing that you need to set up properly is your `s3_bundle_url` value. This defines the bundle that will be loaded onto the runner machine, in order to run the application. There are various strategies to set up the release bundle url - for example, you may always push the latest release to a specific directory in S3 (the "latest" directory) and simply hardcode pointing to this URL. Alternatively, you may want to maintain versioining and use a Git tag or Git commit hash to point to the correct bundle - the version can be set in the build when compiling your release so that you can know which version to point to on any given release.
 
+## Usage Recommendation
+
+### FLAME.call Timeouts and FLAME.Pool Boot Timeouts
+
+EC2 Machines can take some time coming up (even sometimes several minutes) due to how AWS manages capacity in their availability zones. The time is typically under 2 minutes, although it is highly dependent on the instance types that you are trying to raise. Because of this, the `:boot_timeout` for your `FLAME.Pool` and the `:timeout` option for `FLAME.call` should be set high enough to avoid timeouts happening due to waiting for an instance to move from Pending to Running.
+
+### Warm Pool
+
+If you want to ensure that you don't cause all of your function calls to take a long time due to waiting for capacity, it's highly recommended to have a warm pool (i.e. a pool with a minimum greater than 0). This will ensure that for initial calls, you will not wait for an instance to become ready. **Note:** While having a warm pool does ensure that you have an instance at the beginning, if your scale grows, you will eventually have to wait for new instances to boot up.
+
+### Idle Runner Timeouts
+
+In a similar vein to the above two recommendations - setting the `:idle_shutdown_after` option on your configured `FLAME.Pool` can help in ensuring that you do not scale down too quickly. The default value is set to `30_000` (30 seconds), but setting this to a higher value can help ensure that you aren't constantly raising and terminating instances.
+
+### Example Configuration
+
+Based on the above recommendations, an example configuration that may work well would look something like this:
+
+```elixir
+{
+  FLAME.Pool,
+  name: FlameEC2Demo.Pool,
+  # Optionally, set the minimum to 1 so that we can run 100 concurrent tasks without worrying about waiting.
+  min: 0,
+  max: 10,
+  max_concurrency: 100,
+  # Set a global FLAME.call timeout that is higher than the boot timeout to ensure that we do not timeout calls before booting
+  timeout: 180_000,
+  # Set the boot timeout to a high enough number that we can have enough time to raise an instance
+  boot_timeout: 150_000,
+  # Set the idle shutdown timeout to high enough that we don't constantly raise and terminate instances
+  idle_shutdown_after: 60_000,
+}
+```
+
 ## Debugging Issues
 
 The `FlameEC2` backend works by setting up an EC2 UserData script which will initialize the runner instance with a systemd service that is running the release bundle that you specify. If the runner is not able to start, there may be an issue during the start script which causes the whole process to fail. If there is a problem, you can see the logs of the start script by using the systemd journal as shown here:

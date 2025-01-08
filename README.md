@@ -67,7 +67,7 @@ by adding `flame_ec2` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:flame_ec2, "~> 0.0.1"}
+    {:flame_ec2, "~> 1.0.0"}
   ]
 end
 ```

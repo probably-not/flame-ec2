@@ -122,5 +122,7 @@ jobs:
         run: systemd-analyze verify example_systemd_service.service
       - name: Generate start.sh Script Example
         run: mix run scripts/start_sh.exs
-      - name: Shellcheck Lint of Example start.sh
-        run: shellcheck example_start.sh
+      - name: Shellcheck Lint of Example Compressed start.sh
+        run: shellcheck example_start_compressed.sh
+      - name: Shellcheck Lint of Example Uncompressed start.sh
+        run: shellcheck example_start_uncompressed.sh

@@ -11,4 +11,16 @@ rendered =
     s3_bundle_compressed?: true
   )
 
-File.write!("./example_start.sh", rendered)
+File.write!("./example_start_compressed.sh", rendered)
+
+rendered =
+  FlameEC2.Templates.start_script(
+    app: "flame_ec2",
+    systemd_service: systemd_service,
+    env: env,
+    aws_region: "us-east-1",
+    s3_bundle_url: "s3://code/",
+    s3_bundle_compressed?: false
+  )
+
+File.write!("./example_start_uncompressed.sh", rendered)

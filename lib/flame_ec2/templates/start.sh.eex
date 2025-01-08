@@ -19,42 +19,70 @@ detect_package_manager() {
     fi
 }
 
+check_required_packages() {
+    missing_packages=0
+    for pkg in tar gzip unzip; do
+        if ! command -v $pkg >/dev/null 2>&1; then
+            log "Package $pkg is missing"
+            missing_packages=1
+        fi
+    done
+    return $missing_packages
+}
+
 install_packages() {
+    if check_required_packages; then
+        log "All required packages already installed, skipping package installation"
+        return 0
+    fi
+
     pm=$(detect_package_manager)
+    log "Installing missing packages using $pm..."
 
     case $pm in
         "apt")
             export DEBIAN_FRONTEND=noninteractive
-            apt-get update || {
+            apt-get update -qq || {
                 log "Failed to update apt repositories"
                 exit 1
             }
-            apt-get install -y tar gzip unzip || {
+            apt-get install -y -qq tar gzip unzip || {
                 log "Failed to install required packages"
                 exit 1
             }
             ;;
         "yum"|"dnf")
-            $pm update -y || {
+            $pm update -y -q || {
                 log "Failed to update $pm repositories"
                 exit 1
             }
-            $pm install -y tar gzip unzip || {
+            $pm install -y -q tar gzip unzip || {
                 log "Failed to install required packages"
                 exit 1
             }
             ;;
     esac
+}
 
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    unzip awscliv2.zip
-    ./aws/install
+install_aws_cli() {
+    if command -v aws >/dev/null 2>&1; then
+        log "AWS CLI already installed, skipping installation"
+        return 0
+    fi
+
+    log "Installing AWS CLI..."
+    curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip -q awscliv2.zip
+    ./aws/install --update >/dev/null 2>&1
+    rm -rf aws awscliv2.zip
 }
 
 log "Initializing EC2 Flame Node for <%= @app %>"
 
 log "Installing required packages..."
+
 install_packages
+install_aws_cli
 
 if ! command -v aws >/dev/null 2>&1; then
     log "AWS CLI installation failed"
@@ -68,13 +96,8 @@ APP_DIR="/srv/<%= @app %>"
 SERVICE_NAME=<%= @app %>
 RELEASE_DIR="${APP_DIR}/release"
 
-mkdir -p "${APP_DIR}" || {
-    log "Failed to create ${APP_DIR}"
-    exit 1
-}
-
-mkdir -p "${RELEASE_DIR}" || {
-    log "Failed to create ${RELEASE_DIR}"
+mkdir -p "${APP_DIR}" "${RELEASE_DIR}" || {
+    log "Failed to create required directories"
     exit 1
 }
 
@@ -86,36 +109,25 @@ cd "${APP_DIR}" || {
 log "Downloading from S3: ${S3_URL}"
 
 <%= if @s3_bundle_compressed? do %>
-S3_TYPE="compressed"
+aws s3 cp ${S3_URL} ./release.tar.gz --quiet || {
+    log "Failed to download from S3"
+    exit 1
+}
+tar xzf release.tar.gz -C ${RELEASE_DIR} || {
+    log "Failed to extract release.tar.gz"
+    rm -f release.tar.gz
+    exit 1
+}
+rm release.tar.gz
 <% else %>
-S3_TYPE="directory"
+aws s3 sync ${S3_URL} . --quiet || {
+    log "Failed to download from S3"
+    exit 1
+}
 <% end %>
 
-if [ "${S3_TYPE}" = "directory" ]; then
-    aws s3 sync ${S3_URL} . || {
-      log "Failed to download from S3"
-      exit 1
-  }
-else
-    aws s3 cp ${S3_URL} ./release.tar.gz || {
-      log "Failed to download from S3"
-      exit 1
-    }
-    tar xzf release.tar.gz -C ${RELEASE_DIR} || {
-      log "Failed to extract release.tar.gz"
-      rm -f release.tar.gz
-      exit 1
-    }
-    rm release.tar.gz
-fi
-
-if [ ! -d "${RELEASE_DIR}" ]; then
-    log "Release directory ${RELEASE_DIR} not found after extraction"
-    exit 1
-fi
-
-if [ ! -x "${RELEASE_DIR}/bin/<%= @app %>" ]; then
-    log "Executable ${RELEASE_DIR}/bin/<%= @app %> not found or not executable"
+if [ ! -d "${RELEASE_DIR}" ] || [ ! -x "${RELEASE_DIR}/bin/<%= @app %>" ]; then
+    log "Release directory or executable not found after extraction"
     exit 1
 fi
 
